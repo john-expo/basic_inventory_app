@@ -208,6 +208,16 @@ body {
   justify-content: center;
 }
 
+/* When active, ensure pointer events work */
+.logo-popup.active {
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
+.logo-popup.active .logo-popup-image {
+  transform: scale(1);
+}
+
 .logo-popup-image {
   width: 300px;
   height: 300px;
@@ -231,11 +241,11 @@ body {
 }
 
 .logo-popup.active {
-  display: flex !important;
+  animation-name: popIn;
 }
 
-.logo-popup.active .logo-popup-image {
-  transform: scale(1);
+.logo-popup.closing {
+  animation-name: popOut;
 }
 
 @keyframes popIn {
@@ -258,14 +268,6 @@ body {
     opacity: 0;
     transform: scale(0.8) translateY(-10px);
   }
-}
-
-.logo-popup.active {
-  animation-name: popIn;
-}
-
-.logo-popup.closing {
-  animation-name: popOut;
 }
 
 /* Main controls section */

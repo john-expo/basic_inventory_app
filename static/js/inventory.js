@@ -238,14 +238,8 @@ function setupLogoPopup() {
   const popup = document.getElementById('logoPopup');
   
   if (logo && popup) {
-    // Ensure popup has correct pointer-events settings
-    popup.style.pointerEvents = 'none';
-    
-    // Find the image container and ensure it catches clicks
+    // Find the image container
     const popupImage = popup.querySelector('.logo-popup-image');
-    if (popupImage) {
-      popupImage.style.pointerEvents = 'auto';
-    }
     
     // Ensure consistent image positioning
     const logoImg = logo.querySelector('img');
@@ -275,9 +269,10 @@ function setupLogoPopup() {
       }
     });
     
-    // Close popup when clicking anywhere on the overlay (but not on the image)
+    // Close popup when clicking anywhere on the popup (including outside the logo)
     popup.addEventListener('click', function(e) {
-      if (e.target === popup) {
+      // Check if the click is not on the popup image or its children
+      if (popupImage && !popupImage.contains(e.target)) {
         popup.classList.remove('active');
       }
     });
