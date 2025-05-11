@@ -256,16 +256,35 @@ function setupLogoPopup() {
       popupImage.style.zIndex = "1001";
     }
     
+    // Function to smoothly close the popup
+    function closePopupWithAnimation() {
+      if (popup.classList.contains('active')) {
+        popup.classList.add('closing');
+        popup.classList.remove('active');
+        
+        // Remove the closing class after animation completes
+        setTimeout(() => {
+          popup.classList.remove('closing');
+          popup.style.display = 'none';
+        }, 350); // Match the animation duration (350ms)
+      }
+    }
+    
     logo.addEventListener('click', function(e) {
       e.stopPropagation();
       
       // Toggle popup visibility
       if (popup.classList.contains('active')) {
-        // If popup is active, close it
-        popup.classList.remove('active');
+        closePopupWithAnimation();
       } else {
         // If popup is not active, show it
-        popup.classList.add('active');
+        popup.style.display = 'flex';
+        // Small delay to ensure display: flex takes effect before adding active class
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            popup.classList.add('active');
+          });
+        });
       }
     });
     
@@ -273,14 +292,14 @@ function setupLogoPopup() {
     popup.addEventListener('click', function(e) {
       // Check if the click is not on the popup image or its children
       if (popupImage && !popupImage.contains(e.target)) {
-        popup.classList.remove('active');
+        closePopupWithAnimation();
       }
     });
     
     // Also close on escape key
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && popup.classList.contains('active')) {
-        popup.classList.remove('active');
+        closePopupWithAnimation();
       }
     });
   }
