@@ -200,12 +200,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // If already initialized, use the existing app
         console.log("Using existing Firebase app");
         initializeApp(firebase.firestore());
+        
+        // Set up table auto-refresh
+        setupTableAutoRefresh(firebase.firestore());
       } else {
         // Otherwise, initialize a new app
         console.log("Initializing new Firebase app");
         try {
           firebase.initializeApp(firebaseConfig);
           initializeApp(firebase.firestore());
+          
+          // Set up table auto-refresh
+          setupTableAutoRefresh(firebase.firestore());
         } catch (error) {
           console.error("Error initializing Firebase app:", error);
           showMessage("Failed to initialize database connection. Please reload the page.", "error");
@@ -229,18 +235,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Set up modal behaviors
   setupModalBehaviors();
-  
-  // Add clear button functionality for search input
-  const clearSearchBtn = document.getElementById('clearSearch');
-  const productSearchInput = document.getElementById('productSearch');
-  
-  if (clearSearchBtn && productSearchInput) {
-    clearSearchBtn.addEventListener('click', function() {
-      productSearchInput.value = '';
-      productSearchInput.dispatchEvent(new Event('input'));
-      this.style.display = 'none';
-    });
-  }
   
   // Set up enhanced search functionality
   setupEnhancedSearch();
@@ -421,67 +415,29 @@ function initializeApp(db) {
   // Show loading state
   showSkeletonLoading(true);
   
-  // Set up real-time listener for products collection
+  // Load the initial data using our refreshTableData function
+  refreshTableData(db, dataTable, () => {
+    // Make sure action buttons are visible after initial load
+    setTimeout(function() {
+      $('.btn-edit, .btn-delete').css('visibility', 'visible');
+    }, 100);
+  });
+  
+  // Also set up real-time listener for products collection 
+  // to catch any changes made from other clients
   db.collection('products')
     .orderBy('createdAt', 'desc')
     .onSnapshot(
       snapshot => {
-        // Clear existing rows
-        dataTable.clear();
-        
-        if (snapshot.empty) {
-          updateEmptyState(true);
-          showSkeletonLoading(false);
-          return;
+        // Only update if there are actual changes
+        if (snapshot.docChanges().length > 0) {
+          console.log("Real-time update detected, refreshing table...");
+          refreshTableData(db, dataTable);
         }
-        
-        updateEmptyState(false);
-        
-        // Add each product to the table
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          data.id = doc.id;
-          
-          // Create table row with the product data
-          const rowNode = dataTable.row.add([
-            data.product,
-            `<div class="text-center">₱${parseFloat(data.price).toFixed(2)}</div>`,
-            createActionButtons(data.id)
-          ]).node();
-          
-          // Store product data as attributes for easy access
-          $(rowNode).attr('data-id', data.id);
-          $(rowNode).attr('data-product', data.product);
-          $(rowNode).attr('data-price', data.price);
-          
-          // Add data-label attributes for responsive display
-          $(rowNode).find('td:eq(0)').attr('data-label', 'Product');
-          $(rowNode).find('td:eq(1)').attr('data-label', 'Price');
-          $(rowNode).find('td:eq(2)').attr('data-label', 'Actions');
-        });
-        
-        // Draw the table with the new data
-        dataTable.draw();
-        
-        // Apply search if there's a value in the search box
-        const searchTerm = $('#productSearch').val().trim();
-        if (searchTerm) {
-          dataTable.search(searchTerm).draw();
-          highlightSearchResults(searchTerm);
-        }
-    
-        // Hide loading state
-        showSkeletonLoading(false);
-    
-        // Make sure action buttons are visible
-        setTimeout(function() {
-          $('.btn-edit, .btn-delete').css('visibility', 'visible');
-        }, 100);
       },
       error => {
-        console.error("Error getting products:", error);
-        showMessage("Failed to load products. Please refresh the page.", "error");
-        showSkeletonLoading(false);
+        console.error("Error in real-time listener:", error);
+        showMessage("Error receiving updates. Please refresh page manually.", "error");
       }
     );
 }
@@ -929,10 +885,9 @@ function debounce(fn, delay) {
  */
 function setupEnhancedSearch() {
   const searchInput = document.getElementById('productSearch');
-  const clearButton = document.getElementById('clearSearch');
   
-  if (!searchInput || !clearButton) {
-    console.error("Search elements not found");
+  if (!searchInput) {
+    console.error("Search input not found");
     return;
   }
   
@@ -1007,7 +962,7 @@ function setupEnhancedSearch() {
   // Create a debounced search handler with a shorter delay
   const debouncedSearch = debounce(function(searchTerm) {
     // Apply search and draw the table
-    dataTable.draw();
+    dataTable.search(searchTerm).draw();
     
     // Highlight search results if there's a search term
     if (searchTerm) {
@@ -1027,44 +982,49 @@ function setupEnhancedSearch() {
   // Handle input events with debounce
   searchInput._inputHandler = function(event) {
     const searchTerm = this.value.trim();
+    const previousTerm = this.oldValue || "";
     
-    // Show/hide clear button based on search input
-    if (searchTerm) {
-      clearButton.style.display = 'block';
-    } else {
-      clearButton.style.display = 'none';
+    // If search was cleared (by deleting text),
+    // refresh the data automatically
+    if (previousTerm && !searchTerm) {
+      const tableBody = document.querySelector('#inventoryTable tbody');
+      if (tableBody) {
+        // Refresh data, but with a small delay to ensure typing is finished
+        setTimeout(() => {
+          try {
+            const db = firebase.firestore();
+            if (db) {
+              console.log("Search cleared, auto-refreshing data...");
+              tableBody.classList.add('refreshing');
+              refreshTableData(db, dataTable, () => {
+                setTimeout(() => {
+                  tableBody.classList.remove('refreshing');
+                }, 500);
+              });
+            }
+          } catch (error) {
+            console.error("Error auto-refreshing on search clear:", error);
+          }
+        }, 300);
+      }
     }
+    
+    // Store current value to detect when cleared
+    this.oldValue = searchTerm;
     
     // Apply debounced search
     debouncedSearch(searchTerm);
   };
+  
+  // Add input event listener
   searchInput.addEventListener('input', searchInput._inputHandler);
-  
-  // Initial check for existing search text
-  if (searchInput.value.trim()) {
-    clearButton.style.display = 'block';
-    // Apply initial search
-    debouncedSearch(searchInput.value.trim());
-  } else {
-    clearButton.style.display = 'none';
-  }
-  
-  // Handle clear button click
-  clearButton.addEventListener('click', function() {
-    searchInput.value = '';
-    searchInput.focus();
-    this.style.display = 'none';
-    
-    // Clear search and show all rows
-    debouncedSearch('');
-  });
   
   // Force the search input to be interactive
   searchInput.style.pointerEvents = 'auto';
   searchInput.style.opacity = '1';
   
   // Return instance for debugging
-  return { searchInput, clearButton, dataTable };
+  return { searchInput, dataTable };
 }
 
 /**
@@ -1073,19 +1033,36 @@ function setupEnhancedSearch() {
 function toggleNoResultsRow(hasResults) {
   // Check if no-results row already exists
   let noResultsRow = document.getElementById('no-results-row');
+  const tableBody = document.querySelector('#inventoryTable tbody');
   
   if (!hasResults) {
     // Create no-results row if it doesn't exist
     if (!noResultsRow) {
-      const tableBody = document.querySelector('#inventoryTable tbody');
       noResultsRow = document.createElement('tr');
       noResultsRow.id = 'no-results-row';
       noResultsRow.innerHTML = '<td colspan="3" class="no-results">No products found matching your search.</td>';
       tableBody.appendChild(noResultsRow);
+    } else {
+      noResultsRow.style.display = '';
     }
-    noResultsRow.style.display = '';
-  } else if (noResultsRow) {
-    noResultsRow.style.display = 'none';
+    
+    // Hide all other rows
+    const allRows = tableBody.querySelectorAll('tr:not(#no-results-row)');
+    allRows.forEach(row => {
+      row.style.display = 'none';
+    });
+    
+  } else {
+    // Show all rows that should be visible
+    const allRows = tableBody.querySelectorAll('tr:not(#no-results-row)');
+    allRows.forEach(row => {
+      row.style.display = '';
+    });
+    
+    // Hide no-results row if it exists
+    if (noResultsRow) {
+      noResultsRow.style.display = 'none';
+    }
   }
 }
 
@@ -1260,21 +1237,55 @@ function fixSearchAndAddButton() {
     // Replace the input
     searchWrapper.replaceChild(newSearchInput, searchInput);
     
-    // Also ensure the clear button is fixed
-    const clearButton = document.getElementById('clearSearch');
-    if (clearButton) {
-      // Make sure the clear button works properly
-      clearButton.addEventListener('click', function() {
-        newSearchInput.value = '';
-        newSearchInput.focus();
-        this.style.display = 'none';
-        
-        // Apply empty search to DataTable directly
-        if ($.fn.dataTable.isDataTable('#inventoryTable')) {
-          $('#inventoryTable').DataTable().search('').draw();
-        }
-      });
+    // Make sure the search icon is properly positioned
+    const searchIcon = searchWrapper.querySelector('.search-icon');
+    if (searchIcon) {
+      searchIcon.style.pointerEvents = 'none';
+      searchIcon.style.zIndex = '2';
+      
+      // Ensure responsive positioning based on screen size
+      if (window.innerWidth <= 576) {
+        // Extra small screens
+        searchIcon.style.left = '8px';
+        searchIcon.style.width = '14px';
+        searchIcon.style.height = '14px';
+        searchIcon.style.fontSize = '0.75rem';
+      } else if (window.innerWidth <= 768) {
+        // Small screens
+        searchIcon.style.left = '10px';
+        searchIcon.style.width = '14px';
+        searchIcon.style.height = '14px';
+        searchIcon.style.fontSize = '0.75rem';
+      } else {
+        // Larger screens
+        searchIcon.style.left = '12px';
+        searchIcon.style.width = '16px';
+        searchIcon.style.height = '16px';
+        searchIcon.style.fontSize = '0.85rem';
+      }
+      
+      // Add flex display for consistent centering
+      searchIcon.style.display = 'flex';
+      searchIcon.style.alignItems = 'center';
+      searchIcon.style.justifyContent = 'center';
     }
+    
+    // Set padding on search input for consistent spacing around icon
+    // based on screen size
+    if (window.innerWidth <= 576) {
+      newSearchInput.style.padding = '0.5rem 0.5rem 0.5rem 2rem';
+      newSearchInput.style.fontSize = '0.8rem';
+    } else if (window.innerWidth <= 768) {
+      newSearchInput.style.padding = '0.6rem 0.6rem 0.6rem 2.2rem';
+      newSearchInput.style.fontSize = '0.85rem';
+    } else {
+      newSearchInput.style.padding = '0.75rem 0.75rem 0.75rem 2.5rem';
+      newSearchInput.style.fontSize = '0.9rem';
+    }
+    
+    // Ensure proper text overflow behavior
+    newSearchInput.style.minWidth = '0';
+    newSearchInput.style.textOverflow = 'ellipsis';
     
     // Reattach event listeners with a slight delay to ensure DOM is ready
     setTimeout(() => {
@@ -1284,51 +1295,6 @@ function fixSearchAndAddButton() {
       newSearchInput.focus();
       setTimeout(() => newSearchInput.blur(), 100); // Blur after to avoid keyboard popup on mobile
     }, 100);
-  }
-  
-  // Fix add button
-  const addButton = document.getElementById('addProductBtn');
-  if (addButton) {
-    // Remove and recreate the button to clear any event issues
-    const parentNode = addButton.parentNode;
-    const newAddButton = addButton.cloneNode(true);
-    parentNode.replaceChild(newAddButton, addButton);
-    
-    // Reattach event listener
-    newAddButton.addEventListener('click', function(e) {
-      // Prevent any default actions that might conflict with our animation
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Disable the button temporarily to prevent double-clicks
-      this.disabled = true;
-      
-      // Add spin class to the button
-      this.classList.add('spin');
-      
-      // Store a reference to the button for use in setTimeout
-      const button = this;
-      
-      // Remove spin class after animation completes
-      setTimeout(function() {
-        button.classList.remove('spin');
-        button.disabled = false;
-      }, 650); // Slightly longer than animation duration
-      
-      // Reset form fields
-      document.getElementById('addProductForm')?.reset();
-      
-      // Show modal with slight delay to let animation finish
-      setTimeout(() => {
-        const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
-        addModal.show();
-        
-        // Focus on product name field
-        setTimeout(() => {
-          document.getElementById('productName')?.focus();
-        }, 300);
-      }, 300); // Delay showing modal until animation is halfway through
-    });
   }
 }
 
@@ -1415,8 +1381,8 @@ function startModalHealthCheck() {
  * Update the debug info display
  */
 function updateDebugInfo() {
-  const debugInfo = document.getElementById('debugInfo');
-  if (!debugInfo) return;
+  const debugPanel = document.getElementById('debugInfo');
+  if (!debugPanel) return;
   
   // Count DOM elements
   const totalElements = document.querySelectorAll('*').length;
@@ -1432,12 +1398,10 @@ function updateDebugInfo() {
   const tableStyle = window.getComputedStyle(document.querySelector('.table-responsive') || {});
   const searchStyle = window.getComputedStyle(document.querySelector('.search-wrapper') || {});
   
-  debugInfo.innerHTML = `
-    <strong>UI Debug Info</strong><br>
-    DOM Elements: ${totalElements}<br>
-    Fixed Elements: ${fixedElements}<br>
-    Modal Backdrops: ${backdrops}<br>
-    Body Classes: ${bodyClasses || 'none'}<br>
+  debugPanel.innerHTML = `
+    <strong>Debug Info:</strong><br>
+    DataTable status: ${$.fn.dataTable.isDataTable('#inventoryTable') ? 'Initialized' : 'Not initialized'}<br>
+    Screen width: ${window.innerWidth}px<br>
     Body overflow: ${bodyStyles.overflow}<br>
     Container pointer-events: ${containerStyle.pointerEvents}<br>
     Table pointer-events: ${tableStyle.pointerEvents}<br>
@@ -1450,14 +1414,212 @@ function updateDebugInfo() {
  * Toggle debug info visibility
  */
 function toggleDebugInfo() {
-  const debugInfo = document.getElementById('debugInfo');
-  if (debugInfo) {
-    if (debugInfo.style.display === 'none') {
-      debugInfo.style.display = 'block';
-      debugInfo.innerHTML = 'Loading debug info...';
+  const debugPanel = document.getElementById('debugInfo');
+  if (debugPanel) {
+    if (debugPanel.style.display === 'none') {
+      debugPanel.style.display = 'block';
+      debugPanel.innerHTML = 'Loading debug info...';
       updateDebugInfo();
     } else {
-      debugInfo.style.display = 'none';
+      debugPanel.style.display = 'none';
     }
   }
+}
+
+/**
+ * Reset search and show all rows regardless of screen size
+ * This function ensures consistent behavior across all devices
+ */
+function resetSearch(searchInput, dataTable) {
+  // Clear search input if provided
+  if (searchInput) {
+    searchInput.value = '';
+    
+    // Hide clear button if it exists
+    const clearButton = document.getElementById('clearSearch');
+    if (clearButton) {
+      clearButton.style.display = 'none';
+    }
+  }
+  
+  // Reset DataTable search regardless of screen size
+  if (dataTable) {
+    dataTable.search('').draw();
+  } else if ($.fn.dataTable.isDataTable('#inventoryTable')) {
+    dataTable = $('#inventoryTable').DataTable();
+    dataTable.search('').draw();
+  }
+  
+  // Make sure all rows are visible
+  const tableBody = document.querySelector('#inventoryTable tbody');
+  if (tableBody) {
+    // Show subtle loading animation
+    tableBody.classList.add('refreshing');
+    
+    // Show all regular rows
+    const allRows = tableBody.querySelectorAll('tr:not(#no-results-row)');
+    allRows.forEach(row => {
+      row.style.display = '';
+    });
+    
+    // Hide no-results row if it exists
+    const noResultsRow = document.getElementById('no-results-row');
+    if (noResultsRow) {
+      noResultsRow.style.display = 'none';
+    }
+    
+    // Clear all highlighted search results
+    clearSearchHighlights();
+    
+    // Update visual state to show results
+    updateSearchVisualState(true);
+    
+    // Remove any "no-results" class from table body
+    tableBody.classList.remove('no-results');
+    
+    // Refresh data from the database
+    try {
+      const db = firebase.firestore();
+      if (db && dataTable) {
+        // Refresh the table data
+        refreshTableData(db, dataTable, () => {
+          // Remove loading animation when done
+          setTimeout(() => {
+            tableBody.classList.remove('refreshing');
+          }, 500);
+        });
+      } else {
+        // Remove loading animation if couldn't refresh
+        setTimeout(() => {
+          tableBody.classList.remove('refreshing');
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error refreshing data during search reset:", error);
+      // Remove loading animation on error
+      setTimeout(() => {
+        tableBody.classList.remove('refreshing');
+      }, 500);
+    }
+  }
+}
+
+/**
+ * Set up periodic table refresh to ensure data is always current
+ */
+function setupTableAutoRefresh(db) {
+  // Store the current timestamp to avoid duplicate refreshes
+  let lastRefreshed = Date.now();
+  
+  // Set up refresh interval - every 15 seconds
+  const refreshInterval = setInterval(() => {
+    // Only refresh if there's no active search
+    const searchInput = document.getElementById('productSearch');
+    if (searchInput && !searchInput.value.trim()) {
+      // Get the current DataTable instance
+      if ($.fn.dataTable.isDataTable('#inventoryTable')) {
+        const dataTable = $('#inventoryTable').DataTable();
+        
+        // Check if db is valid before refreshing
+        if (db) {
+          console.log("Auto-refreshing table data...");
+          refreshTableData(db, dataTable);
+        }
+      }
+    }
+  }, 15000); // 15 seconds
+  
+  // Return interval ID for cleanup if needed
+  return refreshInterval;
+}
+
+/**
+ * Refresh table data from database
+ */
+function refreshTableData(db, dataTable, callback) {
+  // Show subtle loading indicator
+  const tableBody = document.querySelector('#inventoryTable tbody');
+  if (tableBody) {
+    tableBody.classList.add('refreshing');
+  }
+  
+  // Get fresh data from database
+  db.collection('products')
+    .orderBy('createdAt', 'desc')
+    .get()
+    .then(snapshot => {
+      // Preserve current search term
+      const searchTerm = $('#productSearch').val().trim();
+      
+      // Clear existing rows
+      dataTable.clear();
+      
+      if (snapshot.empty) {
+        updateEmptyState(true);
+        if (tableBody) {
+          tableBody.classList.remove('refreshing');
+        }
+        return;
+      }
+      
+      updateEmptyState(false);
+      
+      // Add each product to the table
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id;
+        
+        // Create table row with the product data
+        const rowNode = dataTable.row.add([
+          data.product,
+          `<div class="text-center">₱${parseFloat(data.price).toFixed(2)}</div>`,
+          createActionButtons(data.id)
+        ]).node();
+        
+        // Store product data as attributes for easy access
+        $(rowNode).attr('data-id', data.id);
+        $(rowNode).attr('data-product', data.product);
+        $(rowNode).attr('data-price', data.price);
+        
+        // Add data-label attributes for responsive display
+        $(rowNode).find('td:eq(0)').attr('data-label', 'Product');
+        $(rowNode).find('td:eq(1)').attr('data-label', 'Price');
+        $(rowNode).find('td:eq(2)').attr('data-label', 'Actions');
+      });
+      
+      // Draw the table with the new data
+      dataTable.draw();
+      
+      // Reapply search if there was one
+      if (searchTerm) {
+        dataTable.search(searchTerm).draw();
+        highlightSearchResults(searchTerm);
+      }
+      
+      // Make sure action buttons work
+      attachActionListeners();
+      
+      // Remove loading state
+      if (tableBody) {
+        tableBody.classList.remove('refreshing');
+      }
+      
+      // Run callback if provided
+      if (typeof callback === 'function') {
+        callback();
+      }
+    })
+    .catch(error => {
+      console.error("Error refreshing table data:", error);
+      
+      // Remove loading state
+      if (tableBody) {
+        tableBody.classList.remove('refreshing');
+      }
+      
+      // Run callback if provided
+      if (typeof callback === 'function') {
+        callback();
+      }
+    });
 }

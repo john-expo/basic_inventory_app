@@ -422,6 +422,7 @@ body {
   overflow: hidden;
   transition: all 0.2s ease;
   box-shadow: var(--card-shadow);
+  min-width: 0; /* Ensures container can shrink below content size */
 }
 
 .search-input-container:focus-within {
@@ -435,46 +436,30 @@ body {
   color: var(--primary);
   font-size: 0.85rem;
   z-index: 2;
+  pointer-events: none; /* Ensure icon doesn't interfere with input */
+  display: flex; /* Ensures consistent positioning */
+  align-items: center;
+  justify-content: center;
+  width: 16px; /* Fixed width */
+  height: 16px; /* Fixed height */
 }
 
 #productSearch {
   flex: 1;
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* Only left padding for icon */
   border: none;
   outline: none;
   background-color: transparent;
   font-size: 0.9rem;
   color: #333;
+  min-width: 0; /* Important for flexbox shrinking */
+  text-overflow: ellipsis; /* Show ellipsis for long text */
 }
 
 #productSearch::placeholder {
   color: rgba(0, 0, 0, 0.65); /* Increased for better contrast */
-}
-
-.search-clear {
-  position: absolute;
-  right: 12px;
-  background: none;
-  border: none;
-  color: #555; /* Darker for better contrast */
-  cursor: pointer;
-  font-size: 0.85rem;
-  padding: 0.5rem; /* Increased tappable area */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  min-width: 44px; /* Ensure minimum tappable area */
-  min-height: 44px;
-}
-
-.search-clear:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-  color: var(--primary);
+  opacity: 1; /* Ensures consistent appearance across browsers */
 }
 
 /* Table */
@@ -719,6 +704,28 @@ body {
   .main-controls {
     flex-wrap: nowrap;
   }
+  
+  /* Mobile search bar styles */
+  .search-wrapper {
+    margin-bottom: 0.5rem;
+    gap: 8px;
+  }
+  
+  .search-input-container {
+    height: 40px; /* Fixed height for mobile */
+  }
+  
+  #productSearch {
+    padding: 0.6rem 0.6rem 0.6rem 2.2rem; /* Only left padding for icon */
+    font-size: 0.85rem;
+  }
+  
+  .search-icon {
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -814,8 +821,8 @@ body {
   
   /* More compact search input */
   #productSearch {
-    padding: 8px 36px 8px 36px; /* Reduced from 12px 38px 12px 38px */
-    font-size: 0.85rem; /* Reduced from 0.9rem */
+    padding: 0.5rem 0.5rem 0.5rem 2rem; /* Only left padding for icon */
+    font-size: 0.8rem;
   }
   
   /* More compact price display */
@@ -881,13 +888,16 @@ body {
     }
   }
   
+  /* Even smaller screen search bar styles */
   .search-wrapper {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+    margin-bottom: 0.4rem;
   }
   
   .search-input-container {
     width: 100%;
+    height: 38px; /* Even smaller height */
   }
   
   .fab {
@@ -1116,5 +1126,34 @@ input:focus-visible,
   font-weight: 500;
   color: var(--primary);
   opacity: 0.85;
+}
+
+/* Table refresh styling */
+.refreshing {
+  position: relative;
+}
+
+.refreshing::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(71, 99, 242, 0) 0%, 
+    rgba(71, 99, 242, 0.5) 50%, 
+    rgba(71, 99, 242, 0) 100%);
+  animation: refreshing-animation 1.5s infinite ease-in-out;
+  z-index: 5;
+}
+
+@keyframes refreshing-animation {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
   
