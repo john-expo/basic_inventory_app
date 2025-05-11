@@ -131,11 +131,11 @@ body {
   display: flex;
   align-items: center;
   gap: 15px; /* Reduced from 18px */
-  background-color: #ffffff; /* Fully opaque white */
+  background-color: rgba(255, 255, 255, 0.85);
   background-image: linear-gradient(to right, rgba(71, 99, 242, 0.02), rgba(71, 99, 242, 0.05));
   border-radius: var(--card-radius);
   border: var(--card-border);
-  padding: 0.5rem var(--spacing);
+  padding: 0.75rem var(--spacing);
   transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
   position: relative;
   margin-bottom: 0.75rem; /* Standardized spacing */
@@ -185,7 +185,7 @@ body {
 }
 
 .title-text {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: var(--primary);
   margin: 0;
@@ -193,6 +193,7 @@ body {
   z-index: 10;
   position: relative;
   line-height: 1.2;
+  padding: 0.5rem 0;
 }
 
 /* Logo popup styling */
