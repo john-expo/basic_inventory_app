@@ -36,7 +36,7 @@ ENV/
 env/
 
 # Environment variables
-.env
+
 
 # IDE specific files
 .idea/
