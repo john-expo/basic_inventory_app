@@ -124,13 +124,13 @@ body {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0; /* No margin */
 }
 
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 15px; /* Reduced from 18px */
+  gap: 15px;
   background-color: rgba(255, 255, 255, 0.85);
   background-image: linear-gradient(to right, rgba(71, 99, 242, 0.02), rgba(71, 99, 242, 0.05));
   border-radius: var(--card-radius);
@@ -138,7 +138,7 @@ body {
   padding: 0.75rem var(--spacing);
   transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
   position: relative;
-  margin-bottom: 0.75rem; /* Standardized spacing */
+  margin-bottom: 0; /* No margin */
   z-index: 15;
   box-shadow: var(--card-shadow);
 }
@@ -185,15 +185,16 @@ body {
 }
 
 .title-text {
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 2.2rem;
+  font-weight: 700;
   color: var(--primary);
   margin: 0;
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
   z-index: 10;
   position: relative;
-  line-height: 1.2;
-  padding: 0.5rem 0;
+  line-height: 1.1;
+  padding: 1rem 0;
+  letter-spacing: -0.01em;
 }
 
 /* Logo popup styling */
@@ -273,10 +274,10 @@ body {
 .main-controls {
   width: 100%;
   max-width: 800px;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0; /* No margin */
   position: relative;
   display: flex;
-  justify-content: space-between; /* Back to space-between for better balance */
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -384,7 +385,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0; /* Ensures proper flex behavior in Safari */
-  margin-top: -4px; /* Reduce space between controls and content */
+  margin-top: 0; /* No margin */
 }
 
 .content-container {
