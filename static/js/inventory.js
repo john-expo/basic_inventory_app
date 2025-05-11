@@ -346,8 +346,8 @@ function initializeApp(db) {
       lengthChange: false, // Disable "Show X entries" dropdown
       dom: 't', // Only show the table, no pagination controls
       columnDefs: [
-        { targets: 0, width: "70%", className: "text-start" },
-        { targets: 1, width: "15%", className: "text-end" },
+        { targets: 0, width: "65%", className: "text-start" },
+        { targets: 1, width: "20%", className: "text-center" },
         { targets: 2, width: "15%", className: "text-center" },
         { orderable: false, targets: 2 }
       ],
@@ -361,7 +361,7 @@ function initializeApp(db) {
           if (index === 0) {
             $(column.header()).css('text-align', 'left');
           } else if (index === 1) {
-            $(column.header()).css('text-align', 'right');
+            $(column.header()).css('text-align', 'center');
           } else if (index === 2) {
             $(column.header()).css('text-align', 'center');
           }
@@ -399,7 +399,7 @@ function initializeApp(db) {
           // Create table row with the product data
           const rowNode = dataTable.row.add([
             data.product,
-            `₱${parseFloat(data.price).toFixed(2)}`,
+            `<div class="text-center">₱${parseFloat(data.price).toFixed(2)}</div>`,
             createActionButtons(data.id)
           ]).node();
           
