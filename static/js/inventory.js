@@ -710,8 +710,8 @@ function adjustTableForScreenSize() {
         table.column(2).width('35%');
         
         // Adjust row padding for small screens
-        $('#inventoryTable tbody tr td').css('padding', '8px 6px');
-        $('#inventoryTable thead th').css('padding', '8px 6px');
+        $('#inventoryTable tbody tr td').css('padding', '6px 6px');
+        $('#inventoryTable thead th').css('padding', '6px 6px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '10px');
         $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '10px');
         
@@ -739,8 +739,8 @@ function adjustTableForScreenSize() {
         table.column(2).width('30%');
         
         // Adjust row padding for medium screens
-        $('#inventoryTable tbody tr td').css('padding', '10px 8px');
-        $('#inventoryTable thead th').css('padding', '10px 8px');
+        $('#inventoryTable tbody tr td').css('padding', '8px 8px');
+        $('#inventoryTable thead th').css('padding', '8px 8px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '12px');
         $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '12px');
         
@@ -766,9 +766,9 @@ function adjustTableForScreenSize() {
         table.column(1).width('25%');
         table.column(2).width('15%');
         
-        // Restore default padding
-        $('#inventoryTable tbody tr td').css('padding', '14px 16px');
-        $('#inventoryTable thead th').css('padding', '14px 16px');
+        // Restore default padding (now more compact)
+        $('#inventoryTable tbody tr td').css('padding', '10px 16px');
+        $('#inventoryTable thead th').css('padding', '12px 16px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '16px');
         $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '16px');
         
