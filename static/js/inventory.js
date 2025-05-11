@@ -64,26 +64,39 @@ document.addEventListener('DOMContentLoaded', function() {
   // Setup Add Product button to show modal with modern event handling
   const fab = document.getElementById('addProductBtn');
   if (fab) {
-    fab.addEventListener('click', function() {
+    fab.addEventListener('click', function(e) {
+      // Prevent any default actions that might conflict with our animation
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Disable the button temporarily to prevent double-clicks
+      this.disabled = true;
+      
       // Add spin class to the button
       this.classList.add('spin');
       
-      // Remove it once the animation finishes
-      this.addEventListener('animationend', function() {
-        this.classList.remove('spin');
-      }, { once: true });
+      // Store a reference to the button for use in setTimeout
+      const button = this;
+      
+      // Remove spin class after animation completes
+      setTimeout(function() {
+        button.classList.remove('spin');
+        button.disabled = false;
+      }, 650); // Slightly longer than animation duration
       
       // Reset form fields
       document.getElementById('addProductForm')?.reset();
     
-      // Show modal
-      const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
-      addModal.show();
-      
-      // Focus on product name field
+      // Show modal with slight delay to let animation finish
       setTimeout(() => {
-        document.getElementById('productName')?.focus();
-      }, 500);
+        const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+        addModal.show();
+        
+        // Focus on product name field
+        setTimeout(() => {
+          document.getElementById('productName')?.focus();
+        }, 300);
+      }, 300); // Delay showing modal until animation is halfway through
     });
   }
   
@@ -206,8 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   
   // Set up window resize handler - simplified to just adjust table
+  let resizeTimer;
   window.addEventListener('resize', function() {
-        adjustTableForScreenSize();
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      adjustTableForScreenSize();
+    }, 250); // Add debounce to prevent excessive updates
   });
   
   // Set up modal behaviors
@@ -346,8 +363,8 @@ function initializeApp(db) {
       lengthChange: false, // Disable "Show X entries" dropdown
       dom: 't', // Only show the table, no pagination controls
       columnDefs: [
-        { targets: 0, width: "65%", className: "text-start" },
-        { targets: 1, width: "20%", className: "text-center" },
+        { targets: 0, width: "60%", className: "text-start" },
+        { targets: 1, width: "25%", className: "text-center" },
         { targets: 2, width: "15%", className: "text-center" },
         { orderable: false, targets: 2 }
       ],
@@ -360,6 +377,22 @@ function initializeApp(db) {
           const column = this;
           if (index === 0) {
             $(column.header()).css('text-align', 'left');
+            
+            // Ensure proper padding for product column
+            const firstCells = $('#inventoryTable tbody tr td:first-child');
+            const screenWidth = window.innerWidth;
+            
+            if (screenWidth <= 576) {
+              firstCells.css('padding-left', '10px');
+              $(column.header()).css('padding-left', '10px');
+            } else if (screenWidth <= 768) {
+              firstCells.css('padding-left', '12px');
+              $(column.header()).css('padding-left', '12px');
+            } else {
+              firstCells.css('padding-left', '16px');
+              $(column.header()).css('padding-left', '16px');
+            }
+            
           } else if (index === 1) {
             $(column.header()).css('text-align', 'center');
           } else if (index === 2) {
@@ -643,6 +676,41 @@ function adjustTableForScreenSize() {
   
   if (table) {
     try {
+      // Set column widths based on screen size
+      if (window.innerWidth <= 576) {
+        // Extra small screens
+        table.column(0).width('45%');
+        table.column(1).width('25%');
+        table.column(2).width('30%');
+        
+        // Adjust row padding for small screens
+        $('#inventoryTable tbody tr td').css('padding', '8px 6px');
+        $('#inventoryTable thead th').css('padding', '8px 6px');
+        $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '10px');
+        
+      } else if (window.innerWidth <= 768) {
+        // Small screens
+        table.column(0).width('50%');
+        table.column(1).width('25%');
+        table.column(2).width('25%');
+        
+        // Adjust row padding for medium screens
+        $('#inventoryTable tbody tr td').css('padding', '10px 8px');
+        $('#inventoryTable thead th').css('padding', '10px 8px');
+        $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '12px');
+        
+      } else {
+        // Larger screens
+        table.column(0).width('60%');
+        table.column(1).width('25%');
+        table.column(2).width('15%');
+        
+        // Restore default padding
+        $('#inventoryTable tbody tr td').css('padding', '14px 16px');
+        $('#inventoryTable thead th').css('padding', '14px 16px');
+        $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '16px');
+      }
+      
       // Force redraw to apply the changes
       table.columns.adjust().draw();
     } catch (error) {
@@ -1147,26 +1215,39 @@ function fixSearchAndAddButton() {
     parentNode.replaceChild(newAddButton, addButton);
     
     // Reattach event listener
-    newAddButton.addEventListener('click', function() {
-      // Add spin class to the button
-      newAddButton.classList.add('spin');
+    newAddButton.addEventListener('click', function(e) {
+      // Prevent any default actions that might conflict with our animation
+      e.preventDefault();
+      e.stopPropagation();
       
-      // Remove it once the animation finishes
-      newAddButton.addEventListener('animationend', function() {
-        newAddButton.classList.remove('spin');
-      }, { once: true });
+      // Disable the button temporarily to prevent double-clicks
+      this.disabled = true;
+      
+      // Add spin class to the button
+      this.classList.add('spin');
+      
+      // Store a reference to the button for use in setTimeout
+      const button = this;
+      
+      // Remove spin class after animation completes
+      setTimeout(function() {
+        button.classList.remove('spin');
+        button.disabled = false;
+      }, 650); // Slightly longer than animation duration
       
       // Reset form fields
       document.getElementById('addProductForm')?.reset();
       
-      // Show modal
-      const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
-      addModal.show();
-      
-      // Focus on product name field
+      // Show modal with slight delay to let animation finish
       setTimeout(() => {
-        document.getElementById('productName')?.focus();
-      }, 500);
+        const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+        addModal.show();
+        
+        // Focus on product name field
+        setTimeout(() => {
+          document.getElementById('productName')?.focus();
+        }, 300);
+      }, 300); // Delay showing modal until animation is halfway through
     });
   }
 }
