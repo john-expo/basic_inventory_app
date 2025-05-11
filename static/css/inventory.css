@@ -269,18 +269,34 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  position: relative;
 }
 
 .table-title {
   font-size: 1.25rem;
-  font-weight: var(--heading-font-weight);
-  color: var(--heading-color);
+  font-weight: 600;
+  color: var(--primary);
   margin: 0;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+}
+
+.table-title::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(to bottom, var(--primary), var(--primary-hover));
+  margin-right: 10px;
+  border-radius: 2px;
 }
 
 /* Add button */
 .fab {
-  background-color: var(--primary);
+  background: linear-gradient(145deg, var(--primary), var(--primary-hover));
   color: white;
   border: none;
   border-radius: 50%;
@@ -290,16 +306,62 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
   outline: none;
   box-shadow: 0 4px 10px rgba(71, 99, 242, 0.3);
   font-size: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.fab::before {
+  content: '+';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
 }
 
 .fab:hover {
   background-color: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(71, 99, 242, 0.4);
+}
+
+.fab:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(71, 99, 242, 0.3);
+}
+
+/* Add button spinning animation */
+@keyframes spinFab {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.fab.spin::before {
+  animation: spinFab 0.5s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+}
+
+.fab::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.fab:hover::after {
+  opacity: 1;
 }
 
 /* App main */

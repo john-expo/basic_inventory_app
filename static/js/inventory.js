@@ -66,25 +66,25 @@ document.addEventListener('DOMContentLoaded', function() {
   if (fab) {
     fab.addEventListener('click', function() {
       // Add spin class to the button
-      fab.classList.add('spin');
+      this.classList.add('spin');
       
       // Remove it once the animation finishes
-      fab.addEventListener('animationend', function() {
-        fab.classList.remove('spin');
+      this.addEventListener('animationend', function() {
+        this.classList.remove('spin');
       }, { once: true });
       
-    // Reset form fields
+      // Reset form fields
       document.getElementById('addProductForm')?.reset();
     
-    // Show modal
-    const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
-    addModal.show();
-    
-    // Focus on product name field
-    setTimeout(() => {
+      // Show modal
+      const addModal = new bootstrap.Modal(document.getElementById('addProductModal'));
+      addModal.show();
+      
+      // Focus on product name field
+      setTimeout(() => {
         document.getElementById('productName')?.focus();
-    }, 500);
-  });
+      }, 500);
+    });
   }
   
   // Make sure the container doesn't block events
