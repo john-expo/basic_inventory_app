@@ -238,6 +238,15 @@ function setupLogoPopup() {
   const popup = document.getElementById('logoPopup');
   
   if (logo && popup) {
+    // Ensure popup has correct pointer-events settings
+    popup.style.pointerEvents = 'none';
+    
+    // Find the image container and ensure it catches clicks
+    const popupImage = popup.querySelector('.logo-popup-image');
+    if (popupImage) {
+      popupImage.style.pointerEvents = 'auto';
+    }
+    
     // Ensure consistent image positioning
     const logoImg = logo.querySelector('img');
     const popupImg = popup.querySelector('.logo-popup-image img');
@@ -1053,7 +1062,7 @@ function fixStuckModalBackdrops() {
   });
   
   // Force enable all interactive elements
-  const interactiveElements = document.querySelectorAll('button, input, a, .table, .table-responsive, .container, .search-wrapper, #addProductBtn, #productSearch');
+  const interactiveElements = document.querySelectorAll('button, input, a, .table, .table-responsive, .container');
   interactiveElements.forEach(element => {
     element.style.pointerEvents = 'auto';
     element.style.opacity = '1';
@@ -1062,14 +1071,6 @@ function fixStuckModalBackdrops() {
     element.style.userSelect = 'auto';
     element.style.webkitUserSelect = 'auto';
   });
-  
-  // Fix z-index issues
-  document.querySelectorAll('.modal-backdrop').forEach(el => el.style.zIndex = '1040');
-  document.querySelectorAll('.modal').forEach(el => el.style.zIndex = '1050');
-  document.querySelectorAll('.search-wrapper').forEach(el => el.style.zIndex = '1030');
-  
-  // Specifically fix search and add button
-  fixSearchAndAddButton();
   
   console.log("Fixed potential UI issues");
 }
@@ -1087,26 +1088,12 @@ function fixSearchAndAddButton() {
     const newSearchInput = searchInput.cloneNode(true);
     newSearchInput.value = originalValue;
     
-    // Ensure search input is fully interactive
-    newSearchInput.style.pointerEvents = 'auto';
-    newSearchInput.style.opacity = '1';
-    newSearchInput.style.zIndex = '1050'; // Higher z-index to ensure it's above other elements
-    
     // Replace the input
     searchWrapper.replaceChild(newSearchInput, searchInput);
-    
-    // Ensure search wrapper is interactive
-    searchWrapper.style.pointerEvents = 'auto';
-    searchWrapper.style.opacity = '1';
-    searchWrapper.style.zIndex = '1030';
     
     // Also ensure the clear button is fixed
     const clearButton = document.getElementById('clearSearch');
     if (clearButton) {
-      clearButton.style.pointerEvents = 'auto';
-      clearButton.style.opacity = '1';
-      clearButton.style.zIndex = '1050';
-      
       // Make sure the clear button works properly
       clearButton.addEventListener('click', function() {
         newSearchInput.value = '';
@@ -1118,14 +1105,6 @@ function fixSearchAndAddButton() {
           $('#inventoryTable').DataTable().search('').draw();
         }
       });
-    }
-    
-    // Fix suggestions list if it exists
-    const suggestionsList = document.getElementById('suggestions');
-    if (suggestionsList) {
-      suggestionsList.style.pointerEvents = 'auto';
-      suggestionsList.style.opacity = '1';
-      suggestionsList.style.zIndex = '1100'; // Higher z-index for suggestions
     }
     
     // Reattach event listeners with a slight delay to ensure DOM is ready
@@ -1145,11 +1124,6 @@ function fixSearchAndAddButton() {
     const parentNode = addButton.parentNode;
     const newAddButton = addButton.cloneNode(true);
     parentNode.replaceChild(newAddButton, addButton);
-    
-    // Ensure button is interactive
-    newAddButton.style.pointerEvents = 'auto';
-    newAddButton.style.opacity = '1';
-    newAddButton.style.zIndex = '1030';
     
     // Reattach event listener
     newAddButton.addEventListener('click', function() {
