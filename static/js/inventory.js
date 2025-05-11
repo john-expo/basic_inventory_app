@@ -328,45 +328,45 @@ function initializeApp(db) {
       paging: false,
       searching: true,
       ordering: true,
-    info: false,
+      info: false,
       autoWidth: false,
-    responsive: false,
-    language: {
-      emptyTable: "No products found",
-      zeroRecords: "No matching products found",
-      info: "", // Remove "Showing X to Y of Z entries"
-      infoEmpty: "",
-      infoFiltered: "",
-      lengthMenu: "", // Remove "Show X entries" dropdown
-      paginate: {
-        previous: "",
-        next: ""
-      }
-    },
-    lengthChange: false, // Disable "Show X entries" dropdown
-    dom: 't', // Only show the table, no pagination controls
+      responsive: true,
+      language: {
+        emptyTable: "No products found",
+        zeroRecords: "No matching products found",
+        info: "", // Remove "Showing X to Y of Z entries"
+        infoEmpty: "",
+        infoFiltered: "",
+        lengthMenu: "", // Remove "Show X entries" dropdown
+        paginate: {
+          previous: "",
+          next: ""
+        }
+      },
+      lengthChange: false, // Disable "Show X entries" dropdown
+      dom: 't', // Only show the table, no pagination controls
       columnDefs: [
-      { targets: 0, width: "60%", className: "text-start" },
-      { targets: 1, width: "20%", className: "text-end" },
-      { targets: 2, width: "20%", className: "text-center" },
-      { orderable: false, targets: 2 }
-    ],
+        { targets: 0, width: "70%", className: "text-start" },
+        { targets: 1, width: "15%", className: "text-end" },
+        { targets: 2, width: "15%", className: "text-center" },
+        { orderable: false, targets: 2 }
+      ],
       drawCallback: function() {
         attachActionListeners();
-      adjustTableForScreenSize();
+        adjustTableForScreenSize();
       
-      // Ensure column widths are maintained
-      this.api().columns().every(function(index) {
-        const column = this;
-        if (index === 0) {
-          $(column.header()).css('text-align', 'left');
-        } else if (index === 1) {
-          $(column.header()).css('text-align', 'right');
-        } else if (index === 2) {
-          $(column.header()).css('text-align', 'center');
-        }
-      });
-    }
+        // Ensure column widths are maintained
+        this.api().columns().every(function(index) {
+          const column = this;
+          if (index === 0) {
+            $(column.header()).css('text-align', 'left');
+          } else if (index === 1) {
+            $(column.header()).css('text-align', 'right');
+          } else if (index === 2) {
+            $(column.header()).css('text-align', 'center');
+          }
+        });
+      }
   });
   
   // Set up column sorting

@@ -120,7 +120,7 @@ body {
 
 /* Header Styles */
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .top-bar {
@@ -135,7 +135,7 @@ body {
   padding: 10px 20px;
   transition: transform var(--transition-medium) ease, box-shadow var(--transition-medium) ease;
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   z-index: 15;
 }
 
@@ -268,7 +268,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .table-title {
@@ -308,6 +308,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0; /* Ensures proper flex behavior in Safari */
 }
 
 .content-container {
@@ -315,12 +316,13 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0; /* Ensures proper flex behavior in Safari */
 }
 
 /* Search */
 .search-wrapper {
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   width: 100%;
 }
 
@@ -353,7 +355,7 @@ body {
 #productSearch {
   flex: 1;
   width: 100%;
-  padding: 12px 40px 12px 40px;
+  padding: 14px 40px 14px 40px;
   border: none;
   outline: none;
   background-color: transparent;
@@ -377,8 +379,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   transition: all 0.2s ease;
 }
@@ -395,23 +397,49 @@ body {
   background-color: white;
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
+  min-height: 0; /* Ensures proper flex behavior in Safari */
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 230px); /* Ensure table takes up available height */
 }
 
 .table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  flex: 1;
+  min-height: 100%;
+  table-layout: fixed; /* Fixed layout for better column control */
+}
+
+/* Adjust column widths */
+.table th:first-child {
+  width: 70%;
+}
+
+.table th:nth-child(2) {
+  width: 15%;
+}
+
+.table th:last-child {
+  width: 15%;
 }
 
 .table thead th {
   background-color: #f5f7ff;
   color: var(--primary);
   font-weight: 600;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .table tbody tr {
@@ -423,15 +451,29 @@ body {
 }
 
 .table td {
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+/* Style for product name cells */
+.table td:first-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Style for price cells */
+.table td:nth-child(2) {
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Alerts */
 .alert {
   border-radius: var(--card-radius);
   padding: 12px 16px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 /* Responsive adjustments */
@@ -585,11 +627,11 @@ body {
   box-shadow: 0 4px 8px rgba(214, 40, 57, 0.2);
 }
 
-/* Action buttons in table */
+/* Compact action buttons to use less space */
 .action-buttons {
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 10px;
 }
 
 .btn-edit, 
@@ -599,6 +641,10 @@ body {
   cursor: pointer;
   color: var(--primary);
   transition: transform 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-edit:hover, 
@@ -640,81 +686,87 @@ a,
 /* MOBILE ADAPT */
 @media (max-width: 768px) {
   .container {
-    padding: 0 0.5rem;
+    padding: 10px;
+  }
+  
+  .table-responsive {
+    height: calc(100vh - 200px); /* Adjust for smaller header on mobile */
+  }
+  
+  .top-bar {
+    padding: 8px 15px;
+  }
+  
+  .app-logo {
+    height: 32px;
+    width: 32px;
   }
   
   .title-text {
     font-size: 1rem;
   }
   
-  .search-wrapper {
-    padding: 0.4rem 0.75rem;
-  }
-  
-  .search-wrapper input {
-    font-size: 0.875rem;
-    padding: 0.4rem;
+  .table-title {
+    font-size: 1.1rem;
   }
   
   .fab {
     width: 36px;
     height: 36px;
-    font-size: 20px;
-  }
-  
-  .table tbody td {
-    padding: 0.6rem 0.75rem;
-    font-size: 0.8125rem;
-  }
-  
-  .btn-edit i, .btn-delete i {
-    font-size: 0.875rem;
-    padding: 5px;
+    font-size: 1.2rem;
   }
 }
 
 /* Responsive adjustments for very small screens */
 @media (max-width: 576px) {
+  .container {
+    padding: 8px;
+  }
+  
+  .table-responsive {
+    height: calc(100vh - 180px); /* Even smaller for tiny screens */
+  }
+  
   .top-bar {
-    padding: 0.5rem;
+    padding: 6px 12px;
   }
   
   .main-controls {
-    padding: 0.5rem;
+    padding: 0;
     gap: 0.5rem;
   }
   
   .title-text {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
   }
   
-  .search-wrapper {
-    padding: 0.3rem 0.6rem;
+  .table-title {
+    font-size: 0.95rem;
   }
   
-  .search-wrapper .icon {
-    font-size: 0.875rem;
+  #productSearch {
+    padding: 12px 38px 12px 38px;
+    font-size: 0.9rem;
   }
   
-  .search-wrapper input {
-    font-size: 0.8125rem;
-    padding: 0.3rem;
+  .table thead th {
+    padding: 12px 14px;
+    font-size: 0.75rem;
+  }
+  
+  .table td {
+    padding: 12px 14px;
+    font-size: 0.85rem;
   }
   
   .fab {
     width: 32px;
     height: 32px;
-    font-size: 18px;
+    font-size: 1.1rem;
   }
   
-  .table tbody td {
-    padding: 0.5rem 0.6rem;
-    font-size: 0.75rem;
-  }
-  
-  .btn-edit i, .btn-delete i {
-    font-size: 0.8125rem;
-    padding: 4px;
+  .action-buttons {
+    gap: 8px;
   }
 }
 
