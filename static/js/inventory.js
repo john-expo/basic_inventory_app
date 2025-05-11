@@ -255,6 +255,13 @@ function setupLogoPopup() {
       popupImg.style.objectPosition = 'center';
     }
     
+    // Fix z-index values to ensure proper stacking
+    logo.style.zIndex = "25";
+    popup.style.zIndex = "1000";
+    if (popupImage) {
+      popupImage.style.zIndex = "1001";
+    }
+    
     logo.addEventListener('click', function(e) {
       e.stopPropagation();
       

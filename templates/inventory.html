@@ -53,6 +53,30 @@
       opacity: 1 !important;
       z-index: 1 !important;
     }
+    
+    /* Fix for the title logo header */
+    .top-bar {
+      position: relative;
+      z-index: 20 !important;
+    }
+    
+    .app-logo {
+      z-index: 25 !important;
+    }
+    
+    .title-text {
+      z-index: 25 !important;
+      position: relative;
+    }
+    
+    /* Logo popup shouldn't block clickability */
+    .logo-popup {
+      pointer-events: none !important;
+    }
+    
+    .logo-popup-image {
+      pointer-events: auto !important;
+    }
   </style>
 </head>
 <body>
@@ -63,12 +87,15 @@
           <img src="{% static 'images/logo.png' %}" alt="Logo">
         </div>
         <h1 class="title-text">Inventory ni mama</h1>
-        <div class="logo-popup" id="logoPopup">
-          <div class="logo-popup-image">
-            <img src="{% static 'images/logo.png' %}" alt="Logo">
-          </div>
+      </div>
+      
+      <!-- Logo popup moved here to avoid layout conflicts -->
+      <div class="logo-popup" id="logoPopup">
+        <div class="logo-popup-image">
+          <img src="{% static 'images/logo.png' %}" alt="Logo">
         </div>
       </div>
+      
       <div class="main-controls">
         <h2 class="table-title">Products</h2>
         <button id="addProductBtn" class="fab" title="Add New Product">+</button>
