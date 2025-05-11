@@ -349,7 +349,7 @@ function initializeApp(db) {
       autoWidth: false,
       responsive: true,
       language: {
-        emptyTable: "No products found",
+        emptyTable: "",
         zeroRecords: "No matching products found",
         info: "", // Remove "Showing X to Y of Z entries"
         infoEmpty: "",
@@ -365,8 +365,21 @@ function initializeApp(db) {
       columnDefs: [
         { targets: 0, width: "60%", className: "text-start" },
         { targets: 1, width: "25%", className: "text-center" },
-        { targets: 2, width: "15%", className: "text-center" },
-        { orderable: false, targets: 2 }
+        { 
+          targets: 2, 
+          width: "15%", 
+          className: "text-center",
+          orderable: false,
+          createdCell: function(td, cellData, rowData, row, col) {
+            // Apply special styling to action column cells
+            $(td).css({
+              'white-space': 'nowrap',
+              'overflow': 'visible',
+              'min-width': '80px',
+              'padding-right': '16px'
+            });
+          }
+        }
       ],
       drawCallback: function() {
         attachActionListeners();
@@ -477,8 +490,21 @@ function initializeApp(db) {
  * Create action buttons HTML for a table row
  */
 function createActionButtons(id) {
+  const screenWidth = window.innerWidth;
+  let minWidth = '80px'; // default for desktop
+  let gap = '10px';
+  
+  // Adjust based on screen size
+  if (screenWidth <= 576) {
+    minWidth = '65px';
+    gap = '6px';
+  } else if (screenWidth <= 768) {
+    minWidth = '70px';
+    gap = '8px';
+  }
+  
   return `
-    <div class="action-buttons">
+    <div class="action-buttons" style="min-width: ${minWidth}; gap: ${gap}">
       <button class="btn-edit" data-id="${id}" title="Edit Product">
         <i class="fas fa-edit"></i>
       </button>
@@ -679,25 +705,60 @@ function adjustTableForScreenSize() {
       // Set column widths based on screen size
       if (window.innerWidth <= 576) {
         // Extra small screens
-        table.column(0).width('45%');
+        table.column(0).width('40%');
         table.column(1).width('25%');
-        table.column(2).width('30%');
+        table.column(2).width('35%');
         
         // Adjust row padding for small screens
         $('#inventoryTable tbody tr td').css('padding', '8px 6px');
         $('#inventoryTable thead th').css('padding', '8px 6px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '10px');
+        $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '10px');
+        
+        // Ensure action column is fully visible
+        $('#inventoryTable td:last-child').css({
+          'white-space': 'nowrap',
+          'overflow': 'visible'
+        });
+        
+        // Adjust action buttons sizing
+        $('.action-buttons').css({
+          'min-width': '65px',
+          'gap': '6px'
+        });
+        
+        $('.btn-edit, .btn-delete').css({
+          'transform': 'scale(1)',
+          'padding': '5px'
+        });
         
       } else if (window.innerWidth <= 768) {
         // Small screens
         table.column(0).width('50%');
-        table.column(1).width('25%');
-        table.column(2).width('25%');
+        table.column(1).width('20%');
+        table.column(2).width('30%');
         
         // Adjust row padding for medium screens
         $('#inventoryTable tbody tr td').css('padding', '10px 8px');
         $('#inventoryTable thead th').css('padding', '10px 8px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '12px');
+        $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '12px');
+        
+        // Ensure action column is fully visible
+        $('#inventoryTable td:last-child').css({
+          'white-space': 'nowrap',
+          'overflow': 'visible'
+        });
+        
+        // Adjust action buttons sizing
+        $('.action-buttons').css({
+          'min-width': '70px',
+          'gap': '8px'
+        });
+        
+        $('.btn-edit, .btn-delete').css({
+          'padding': '6px'
+        });
         
       } else {
         // Larger screens
@@ -709,7 +770,26 @@ function adjustTableForScreenSize() {
         $('#inventoryTable tbody tr td').css('padding', '14px 16px');
         $('#inventoryTable thead th').css('padding', '14px 16px');
         $('#inventoryTable td:first-child, #inventoryTable th:first-child').css('padding-left', '16px');
+        $('#inventoryTable td:last-child, #inventoryTable th:last-child').css('padding-right', '16px');
+        
+        // Restore action buttons sizing
+        $('.action-buttons').css({
+          'min-width': '80px',
+          'gap': '10px'
+        });
+        
+        $('.btn-edit, .btn-delete').css({
+          'transform': '',
+          'padding': '5px'
+        });
       }
+      
+      // Always ensure the action column is visible
+      $('#inventoryTable th:last-child, #inventoryTable td:last-child').css({
+        'text-align': 'center',
+        'white-space': 'nowrap',
+        'overflow': 'visible'
+      });
       
       // Force redraw to apply the changes
       table.columns.adjust().draw();
